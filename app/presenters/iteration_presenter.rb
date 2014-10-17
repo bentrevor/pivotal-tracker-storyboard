@@ -34,46 +34,16 @@ class IterationPresenter
     @projects_velocity ||= projects.map(&:current_velocity).inject(:+)
   end
 
-  def started_stories
-    stories.select { |story| story.current_state == "started" }
-  end
-
-  def finished_stories
-    stories.select { |story| story.current_state == "finished" }.
-      reject { |story| story.labels.map(&:name).include?("ready for qa") }
-  end
-
-  def reviewed_stories
-    stories.select { |story| story.labels.map(&:name).include?("ready for qa") }
-  end
-
-  def delivered_stories
-    stories.select { |story| story.current_state == "delivered" }
-  end
-
-  def accepted_stories
-    stories.select { |story| story.current_state == "accepted" }.reject do |story|
-      labels = story.labels.map(&:name)
-      labels.include?("released") || labels.include?("will not do")
-    end
-  end
-
-  def released_stories
-    stories.select { |story| story.current_state == "accepted" }.select do |story|
-      labels = story.labels.map(&:name)
-      labels.include?("released") || labels.include?("will not do")
-    end
-  end
-
   def columns
     columns = [
+      { title: "Unstarted",     stories: unstarted_stories },
       { title: "Started",       stories: started_stories },
       { title: "Ready for CR",  stories: finished_stories },
       { title: "Ready for QA",  stories: reviewed_stories },
-      { title: "Delivered",     stories: delivered_stories },
-      { title: "Accepted",      stories: accepted_stories },
+      { title: "Delivered",     stories: delivered_stories + accepted_stories},
       { title: "Released",      stories: released_stories }
     ]
+
     columns.each do |column|
       column[:total] = column[:stories].map(&:estimate).map(&:to_i).inject(:+).to_i
     end
@@ -98,8 +68,48 @@ class IterationPresenter
   end
 
   private
+    # TODO: Make this flexible and not hardcoded to beginning of week label
+    def unstarted_stories_label
+      Date.current.beginning_of_week.to_s
+    end
+
+    def unstarted_stories
+      stories.select { |story| story.current_state == "unstarted" && story.labels.map(&:name).include?(unstarted_stories_label)}
+    end
+
+    def started_stories
+      stories.select { |story| story.current_state == "started" }
+    end
+
+    def finished_stories
+      stories.select { |story| story.current_state == "finished" }.
+        reject { |story| story.labels.map(&:name).include?("ready for qa") }
+    end
+
+    def reviewed_stories
+      stories.select { |story| story.labels.map(&:name).include?("ready for qa") }
+    end
+
+    def delivered_stories
+      stories.select { |story| story.current_state == "delivered" }
+    end
+
+    def accepted_stories
+      stories.select { |story| story.current_state == "accepted" }.reject do |story|
+        labels = story.labels.map(&:name)
+        labels.include?("released") || labels.include?("will not do")
+      end
+    end
+
+    def released_stories
+      stories.select { |story| story.current_state == "accepted" }.select do |story|
+        labels = story.labels.map(&:name)
+        labels.include?("released") || labels.include?("will not do")
+      end
+    end
+
     def iteration_stories_filter
-      "(state:started OR state:finished OR state:delivered OR accepted_after:#{Date.current.beginning_of_week}) includedone:true"
+      "(label:#{unstarted_stories_label} OR state:started OR state:finished OR state:delivered OR accepted_after:#{Date.current.beginning_of_week}) includedone:true"
     end
 
     def people
