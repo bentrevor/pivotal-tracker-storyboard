@@ -45,7 +45,7 @@ class IterationPresenter
     ]
 
     columns.each do |column|
-      column[:total] = column[:stories].map(&:estimate).map(&:to_i).inject(:+).to_i
+      column[:total] = column[:stories].map(&:estimate).map(&:to_i).inject(0, :+)
     end
   end
 
@@ -55,7 +55,7 @@ class IterationPresenter
 
   def project_iteration_estimates
     all_stories.each_with_object({}) do |(project_id, stories), hash|
-      hash[project_id] = stories.map(&:estimate).map(&:to_i).inject(:+).to_i
+      hash[project_id] = stories.select { |story| !last_week_story?(story) }.map(&:estimate).map(&:to_i).inject(0, :+)
     end
   end
 
@@ -64,17 +64,19 @@ class IterationPresenter
   end
 
   def my_iteration_estimate
-    all_stories.values.flatten.select {|story| my_story?(story) }.map(&:estimate).map(&:to_i).inject(:+)
+    all_stories.values.flatten.select {|story| my_story?(story) }.map(&:estimate).map(&:to_i).inject(0, :+)
   end
 
   private
+
     # TODO: Make this flexible and not hardcoded to beginning of week label
     def unstarted_stories_label
       Date.current.beginning_of_week.to_s
     end
 
     def unstarted_stories
-      stories.select { |story| story.current_state == "unstarted" && story.labels.map(&:name).include?(unstarted_stories_label)}
+      stories.select { |story| story.current_state == "unstarted"}.
+        select { |story | story.labels.map(&:name).include?(unstarted_stories_label) }
     end
 
     def started_stories
@@ -83,7 +85,7 @@ class IterationPresenter
 
     def finished_stories
       stories.select { |story| story.current_state == "finished" }.
-        reject { |story| story.labels.map(&:name).include?("ready for qa") }
+        reject { |story| reviewed_stories.include? story }
     end
 
     def reviewed_stories
@@ -95,21 +97,33 @@ class IterationPresenter
     end
 
     def accepted_stories
-      stories.select { |story| story.current_state == "accepted" }.reject do |story|
-        labels = story.labels.map(&:name)
-        labels.include?("released") || labels.include?("will not do")
-      end
+      stories.select { |story| story.current_state == "accepted" && !released_story?(story)}
     end
 
     def released_stories
-      stories.select { |story| story.current_state == "accepted" }.select do |story|
-        labels = story.labels.map(&:name)
-        labels.include?("released") || labels.include?("will not do")
-      end
+      stories.select { |story| released_story?(story) && !last_week_story?(story)}
+    end
+
+    def released_last_week_stories
+      stories.select { |story| released_story?(story) && last_week_story?(story)}
+    end
+
+    def released_story?(story)
+      labels = story.labels.map(&:name)
+      story.current_state == "accepted" && (
+        labels.include?("released") ||
+        labels.include?("will not do") ||
+        story.story_type == "chore"
+      )
+    end
+
+    def last_week_story?(story)
+      story.current_state == "accepted" && story.accepted_at < Date.current.beginning_of_week
     end
 
     def iteration_stories_filter
-      "(label:#{unstarted_stories_label} OR state:started OR state:finished OR state:delivered OR accepted_after:#{Date.current.beginning_of_week}) includedone:true"
+      "(label:#{unstarted_stories_label} OR state:started OR state:finished OR state:delivered OR \
+       accepted_after:#{Date.current.beginning_of_week - 1.week}) includedone:true"
     end
 
     def people
@@ -130,7 +144,7 @@ class IterationPresenter
 
     def all_stories
       @all_stories ||= {}.tap do |hash|
-        projects.each { |project| hash[project.id] = initialize_people_objects(project.stories.all(:search => iteration_stories_filter)) }
+        projects.each { |project| hash[project.id] = initialize_people_objects(project.stories.all(search: iteration_stories_filter)) }
       end
     end
 
@@ -141,7 +155,7 @@ class IterationPresenter
         all_stories.values.inject(:+)
       end
       stories.keep_if {|story| my_story?(story) } if my_stories_only
-      stories
+      stories.sort_by(&:id)
     end
 
     def initialize_people_objects(stories)
