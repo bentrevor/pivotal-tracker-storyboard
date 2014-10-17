@@ -49,10 +49,12 @@
             %small
               %strong
                 %span{style: "color: green;"}
-                  = story.labels.map(&:name).join(", ")
+                  %small
+                    = story.labels.map(&:name).join(", ")
               = story.name
-              %br
-              #{ raw role_initials(story, "requester") }
-              #{ raw role_initials(story, "developers") }
-              #{ raw role_initials(story, "reviewers") }
-              #{ raw role_initials(story, "qa") }
+              %div
+                %small
+                  #{ raw role_initials(story, "requester") }
+                  #{ raw role_initials(story, "developers") }
+                  #{ raw role_initials(story, "reviewers") }
+                  #{ raw role_initials(story, "qa") }
