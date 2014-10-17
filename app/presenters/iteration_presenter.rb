@@ -75,7 +75,7 @@ class IterationPresenter
       { title: "Released",      stories: released_stories }
     ]
     columns.each do |column|
-      column[:total] = column[:stories].map(&:estimate).inject(:+).to_i
+      column[:total] = column[:stories].map(&:estimate).map(&:to_i).inject(:+).to_i
     end
   end
 
@@ -85,7 +85,7 @@ class IterationPresenter
 
   def project_iteration_estimates
     all_stories.each_with_object({}) do |(project_id, stories), hash|
-      hash[project_id] = stories.map(&:estimate).inject(:+).to_i
+      hash[project_id] = stories.map(&:estimate).map(&:to_i).inject(:+).to_i
     end
   end
 
@@ -94,7 +94,7 @@ class IterationPresenter
   end
 
   def my_iteration_estimate
-    all_stories.values.flatten.select {|story| my_story?(story) }.map(&:estimate).inject(:+).to_i
+    all_stories.values.flatten.select {|story| my_story?(story) }.map(&:estimate).map(&:to_i).inject(:+)
   end
 
   private
