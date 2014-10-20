@@ -13,9 +13,6 @@
       All
       %span.label.label-default
         = @iteration_presenter.all_iteration_estimate
-      -#%span.badge.alert-danger
-        %span.glyphicon.glyphicon-flash
-        = @iteration_presenter.all_iteration_estimate
   %li{:class => ("active" if my_stories_tab?(@iteration_presenter))}
     %a{href: "#{iteration_path(:my_stories_only => true)}"}
       My Work

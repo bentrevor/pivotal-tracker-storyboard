@@ -11,6 +11,7 @@ class IterationController < ApplicationController
     @iteration_presenter = cached_iteration_presenter
     @iteration_presenter.selected_project_id = params[:project_id].try(:to_i)
     @iteration_presenter.my_stories_only = !!params[:my_stories_only]
+    @iteration_presenter.show_last_week = !!params[:show_last_week]
   end
 
   def refresh

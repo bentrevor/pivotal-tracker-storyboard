@@ -11,6 +11,7 @@ end
 class IterationPresenter
   attr_accessor :selected_project_id
   attr_accessor :my_stories_only
+  attr_accessor :show_last_week
   attr_reader   :updated_at
 
   def initialize(api_token)
@@ -62,8 +63,11 @@ class IterationPresenter
   end
 
   def project_iteration_estimates
-    all_stories.each_with_object({}) do |(project_id, stories), hash|
-      hash[project_id] = stories.select { |story| !last_week_story?(story) }.map(&:estimate).map(&:to_i).inject(0, :+)
+    @project_iteration_estimates ||= begin
+      all_stories.each_with_object({}) do |(project_id, stories), hash|
+        hash[project_id] = stories.select { |story| !released_last_week_stories.include?(story) }.
+          map(&:estimate).map(&:to_i).inject(0, :+)
+      end
     end
   end
 

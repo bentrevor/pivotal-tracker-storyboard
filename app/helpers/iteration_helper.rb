@@ -44,7 +44,6 @@ module IterationHelper
     !iteration_presenter.selected_project_id && iteration_presenter.my_stories_only
   end
 
-
   private
     def initials(people)
       people = [people].compact unless people.is_a? Array
