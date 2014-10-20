@@ -49,6 +49,14 @@ class IterationPresenter
     end
   end
 
+  def released_last_week_stories
+    stories.select { |story| released_story?(story) && last_week_story?(story)}
+  end
+
+  def released_last_week_total
+    @released_last_week_total ||= released_last_week_stories.map(&:estimate).map(&:to_i).inject(0, :+)
+  end
+
   def iteration_date_range
     "#{Date.current.beginning_of_week} - #{Date.current.end_of_week}"
   end
@@ -102,10 +110,6 @@ class IterationPresenter
 
     def released_stories
       stories.select { |story| released_story?(story) && !last_week_story?(story)}
-    end
-
-    def released_last_week_stories
-      stories.select { |story| released_story?(story) && last_week_story?(story)}
     end
 
     def released_story?(story)

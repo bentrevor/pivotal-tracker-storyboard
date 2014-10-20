@@ -58,3 +58,31 @@
                   #{ raw role_initials(story, "developers") }
                   #{ raw role_initials(story, "reviewers") }
                   #{ raw role_initials(story, "qa") }
+      -if column[:title] == "Released"
+        .well.well-sm.text-center
+          %strong
+            Released last week
+            %span.label.label-default= @iteration_presenter.released_last_week_total
+        %ul.list-group
+        - @iteration_presenter.released_last_week_stories.each do |story|
+          %li.list-group-item{:class => "list-group-item-#{story_state_color(story.current_state)}"}
+            = story_icon(story.story_type)
+            %span.label{:class => "label-#{story_state_color(story.current_state)}"}= story.estimate
+            %span.glyphicon.glyphicon-info-sign{:title => story.name, :"data-container" => "body", :"data-toggle" => "popover", :"data-placement" => "right", :"data-content" => story.description}
+            %a{href: story.url, target: "_blank"}
+              %span.glyphicon.glyphicon-link
+            - story.github_urls.each do |github_url|
+              %a{href: github_url, target: "_blank"}
+                %span.fa.fa-github
+            %small
+              %strong
+                %span{style: "color: green;"}
+                  %small
+                    = story.labels.map(&:name).join(", ")
+              = story.name
+              %div
+                %small
+                  #{ raw role_initials(story, "requester") }
+                  #{ raw role_initials(story, "developers") }
+                  #{ raw role_initials(story, "reviewers") }
+                  #{ raw role_initials(story, "qa") }
