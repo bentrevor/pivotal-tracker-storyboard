@@ -28,9 +28,8 @@ class IterationController < ApplicationController
     end
 
     def cached_iteration_presenter
-      unless session[:iteration_presenter] && session[:iteration_presenter_created].try(:>, 12.hours.ago)
+      unless session[:iteration_presenter] && session[:iteration_presenter].updated_at > 12.hours.ago
         session[:iteration_presenter] = IterationPresenter.new(@api_token)
-        session[:iteration_presenter_created] = Time.now
       end
       session[:iteration_presenter]
     end
