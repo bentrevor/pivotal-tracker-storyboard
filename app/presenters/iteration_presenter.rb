@@ -26,8 +26,8 @@ class IterationPresenter
 
   def projects
     @projects ||= PivotalTracker::Project.all("fields=name,current_velocity").
-      map { |project| project.name.gsub!("NetCredit - ", ""); project }.
       delete_if { |project| project.name.starts_with?("Onstride") }.
+      map { |project| project.name.gsub!("NetCredit - ", ""); project }.
       sort { |a, b| a.name <=> b.name }
   end
 
@@ -46,16 +46,16 @@ class IterationPresenter
     ]
 
     columns.each do |column|
-      column[:total] = column[:stories].map(&:estimate).map(&:to_i).inject(0, :+)
+      column[:total] = column[:stories].sum { |story| story.estimate.to_i }
     end
   end
 
   def released_last_week_stories
-    stories.select { |story| released_story?(story) && last_week_story?(story)}
+    stories.select { |story| released_story?(story) && last_week_story?(story) }
   end
 
   def released_last_week_total
-    @released_last_week_total ||= released_last_week_stories.map(&:estimate).map(&:to_i).inject(0, :+)
+    released_last_week_stories.sum { |story| story.estimate.to_i }
   end
 
   def iteration_date_range
@@ -65,8 +65,9 @@ class IterationPresenter
   def project_iteration_estimates
     @project_iteration_estimates ||= begin
       all_stories.each_with_object({}) do |(project_id, stories), hash|
+        stories.keep_if {|story| my_story?(story) } if my_stories_only
         hash[project_id] = stories.select { |story| !released_last_week_stories.include?(story) }.
-          map(&:estimate).map(&:to_i).inject(0, :+)
+          sum { |story| story.estimate.to_i }
       end
     end
   end
@@ -76,7 +77,7 @@ class IterationPresenter
   end
 
   def my_iteration_estimate
-    all_stories.values.flatten.select {|story| my_story?(story) }.map(&:estimate).map(&:to_i).inject(0, :+)
+    all_stories.values.flatten.select {|story| my_story?(story) }.sum { |story| story.estimate.to_i }
   end
 
   private
@@ -163,7 +164,7 @@ class IterationPresenter
         all_stories.values.inject(:+)
       end
       stories.keep_if {|story| my_story?(story) } if my_stories_only
-      stories.sort_by(&:id)
+      stories.sort_by {|story| [story.project_id, story.id] }
     end
 
     def initialize_people_objects(stories)

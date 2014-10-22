@@ -29,22 +29,30 @@ module IterationHelper
 
   end
 
-  def last_updated(iteration_presenter)
-    if iteration_presenter.updated_at
-      updated_ago = time_ago_in_words iteration_presenter.updated_at
+  def last_updated
+    if @iteration_presenter.updated_at
+      updated_ago = time_ago_in_words @iteration_presenter.updated_at
       content_tag(:span, "(last updated #{updated_ago} ago)", class: "small")
     end
   end
 
-  def all_projects_tab?(iteration_presenter)
-    !iteration_presenter.selected_project_id && !iteration_presenter.my_stories_only
+  def my_stories_only_path
+    url_for(toggle_param(:my_stories_only))
   end
 
-  def my_stories_tab?(iteration_presenter)
-    !iteration_presenter.selected_project_id && iteration_presenter.my_stories_only
+  def show_last_week_path
+    url_for(toggle_param(:show_last_week))
   end
 
   private
+    def toggle_param(param)
+      if params[param]
+        params.except(param)
+      else
+        params.merge(param => true)
+      end
+    end
+
     def initials(people)
       people = [people].compact unless people.is_a? Array
       people.map { |person| content_tag(:strong, content_tag(:abbr, person.initials, title: person.name, class: "initialism")) }.join ", "

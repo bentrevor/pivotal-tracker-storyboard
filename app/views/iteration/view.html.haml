@@ -3,21 +3,21 @@
     %span.glyphicon.glyphicon-refresh
     Refresh
   %br
-  = last_updated(@iteration_presenter)
+  = last_updated
+.pull-right.text-right
+  %label My stories only
+  = check_box_tag :my_stories_only, 1, @iteration_presenter.my_stories_only, onchange: "window.location.href='#{my_stories_only_path}'"
+  %label Show last week
+  = check_box_tag :show_last_week, 1, @iteration_presenter.show_last_week, onchange: "window.location.href='#{show_last_week_path}'"
 %h1
   Story Board
   %small (#{@iteration_presenter.iteration_date_range})
 %ul.nav.nav-tabs
-  %li{:class => ("active" if all_projects_tab?(@iteration_presenter))}
+  %li{:class => ("active" unless @iteration_presenter.selected_project_id)}
     %a{href: "#{iteration_path}"}
       All
       %span.label.label-default
         = @iteration_presenter.all_iteration_estimate
-  %li{:class => ("active" if my_stories_tab?(@iteration_presenter))}
-    %a{href: "#{iteration_path(:my_stories_only => true)}"}
-      My Work
-      %span.label.label-default
-        = @iteration_presenter.my_iteration_estimate
   - @iteration_presenter.projects.each do |project|
     %li{:class => ("active" if project.id == @iteration_presenter.selected_project_id)}
       %a{href: "#{project_path(:project_id => project.id)}"}
@@ -55,7 +55,7 @@
                   #{ raw role_initials(story, "developers") }
                   #{ raw role_initials(story, "reviewers") }
                   #{ raw role_initials(story, "qa") }
-      -if column[:title] == "Released"
+      -if column[:title] == "Released" && @iteration_presenter.show_last_week
         .well.well-sm.text-center
           %strong
             Released last week
