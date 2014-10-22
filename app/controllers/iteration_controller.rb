@@ -11,6 +11,7 @@ class IterationController < ApplicationController
     @iteration_presenter = cached_iteration_presenter
     @iteration_presenter.selected_project_id = params[:project_id].try(:to_i)
     @iteration_presenter.my_stories_only = !!params[:my_stories_only]
+    @iteration_presenter.show_last_week = !!params[:show_last_week]
   end
 
   def refresh
@@ -27,6 +28,9 @@ class IterationController < ApplicationController
     end
 
     def cached_iteration_presenter
-      session[:iteration_presenter] ||= IterationPresenter.new(@api_token)
+      unless session[:iteration_presenter] && session[:iteration_presenter].updated_at > 12.hours.ago
+        session[:iteration_presenter] = IterationPresenter.new(@api_token)
+      end
+      session[:iteration_presenter]
     end
 end
