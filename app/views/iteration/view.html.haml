@@ -34,9 +34,9 @@
           %span.label.label-default= column[:total]
       %ul.list-group
         - column[:stories].each do |story|
-          %li.list-group-item{:class => "list-group-item-#{story_state_color(story.current_state)}"}
+          %li.list-group-item{:class => "list-group-item-#{story_state_color(story)}"}
             = story_icon(story.story_type)
-            %span.label{:class => "label-#{story_state_color(story.current_state)}"}= story.estimate
+            %span.label{:class => "label-#{story_state_color(story)}"}= story.estimate
             %span.glyphicon.glyphicon-info-sign{:title => story.name, :"data-container" => "body", :"data-toggle" => "popover", :"data-placement" => "right", :"data-content" => story.description}
             %a{href: story.url, target: "_blank"}
               %span.glyphicon.glyphicon-link
@@ -62,9 +62,9 @@
             %span.label.label-default= @iteration_presenter.released_last_week_total
         %ul.list-group
         - @iteration_presenter.released_last_week_stories.each do |story|
-          %li.list-group-item{:class => "list-group-item-#{story_state_color(story.current_state)}"}
+          %li.list-group-item{:class => "list-group-item-#{story_state_color(story)}"}
             = story_icon(story.story_type)
-            %span.label{:class => "label-#{story_state_color(story.current_state)}"}= story.estimate
+            %span.label{:class => "label-#{story_state_color(story)}"}= story.estimate
             %span.glyphicon.glyphicon-info-sign{:title => story.name, :"data-container" => "body", :"data-toggle" => "popover", :"data-placement" => "right", :"data-content" => story.description}
             %a{href: story.url, target: "_blank"}
               %span.glyphicon.glyphicon-link

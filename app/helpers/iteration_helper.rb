@@ -7,8 +7,9 @@ module IterationHelper
     end
   end
 
-  def story_state_color(state)
-    case state
+  def story_state_color(story)
+    return "danger" if story.labels.map(&:name).include? "will not do"
+    case story.current_state
     when "started"                then "info"
     when "finished"               then "warning"
     when "delivered", "accepted"  then "success"
