@@ -37,7 +37,7 @@ class IterationPresenter
 
   def columns
     columns = [
-      { title: "Unstarted",     stories: unstarted_stories },
+      { title: "Planned",       stories: planned_stories },
       { title: "Started",       stories: started_stories },
       { title: "Ready for CR",  stories: finished_stories },
       { title: "Ready for QA",  stories: reviewed_stories },
@@ -82,14 +82,8 @@ class IterationPresenter
 
   private
 
-    # TODO: Make this flexible and not hardcoded to beginning of week label
-    def unstarted_stories_label
-      Date.current.beginning_of_week.to_s
-    end
-
-    def unstarted_stories
-      stories.select { |story| story.current_state == "unstarted"}.
-        select { |story | story.labels.map(&:name).include?(unstarted_stories_label) }
+    def planned_stories
+      stories.select { |story| story.current_state == "planned" }
     end
 
     def started_stories
@@ -131,8 +125,8 @@ class IterationPresenter
     end
 
     def iteration_stories_filter
-      "(label:#{unstarted_stories_label} OR state:started OR state:finished OR state:delivered OR \
-       accepted_after:#{Date.current.beginning_of_week - 1.week}) includedone:true"
+      "(state:planned OR state:started OR state:finished OR state:delivered OR \
+       accepted_after:#{Date.current.beginning_of_week - 1.week}) includedone:true -type:release"
     end
 
     def people
@@ -163,8 +157,8 @@ class IterationPresenter
       else
         all_stories.values.inject(:+)
       end
-      stories.keep_if {|story| my_story?(story) } if my_stories_only
-      stories.sort_by {|story| [story.project_id, story.id] }
+      stories.keep_if { |story| my_story?(story) } if my_stories_only
+      stories.sort_by { |story| [story.project_id, story.id] }
     end
 
     def initialize_people_objects(stories)
@@ -176,6 +170,7 @@ class IterationPresenter
         story.reviewers   = reviewer_initials.map { |initials| person_by_initials(initials) }.compact
         story.qa          = qa_initials.map { |initials| person_by_initials(initials) }.compact
         story.github_urls = github_urls_from_description(story)
+        story.estimate    = 0 if story.labels.map(&:name).include?("will not do")
         story
       end
     end
