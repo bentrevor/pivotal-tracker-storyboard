@@ -2,7 +2,6 @@
 %html
   %head
     <title>StoryBoard</title>
-    = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true
     / Bootstrap latest compiled and minified CSS
     = stylesheet_link_tag "//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"
     / Bootstrap optional theme
@@ -11,6 +10,7 @@
     / Font Awesome
     = stylesheet_link_tag "//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css"
 
+    = stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true
     = javascript_include_tag 'application', 'data-turbolinks-track' => true
 
     = csrf_meta_tags
